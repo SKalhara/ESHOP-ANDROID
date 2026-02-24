@@ -8,8 +8,7 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/product_details_bottom_bar"
-        >
+        android:layout_above="@+id/product_details_bottom_bar">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -97,6 +96,7 @@
                     android:orientation="horizontal">
 
                     <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/product_details_btn_minus"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:background="@drawable/circle_shape"
@@ -114,6 +114,7 @@
                         android:textSize="20sp" />
 
                     <androidx.appcompat.widget.AppCompatButton
+                        android:id="@+id/product_details_btn_plus"
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:background="@drawable/circle_shape"
@@ -141,8 +142,8 @@
             </LinearLayout>
 
             <include
-                layout="@layout/item_section"
                 android:id="@+id/product_details_top_sell_section"
+                layout="@layout/item_section"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
         </LinearLayout>

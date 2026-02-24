@@ -29,13 +29,19 @@ import com.kalhara.eshopfinal.adapter.SectionAdapter;
 import com.kalhara.eshopfinal.databinding.FragmentProductDetailsBinding;
 import com.kalhara.eshopfinal.model.Product;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class ProductDetailsFragment extends Fragment {
 
     private FragmentProductDetailsBinding binding;
     private String productId;
+    private int quantity = 1;
+    private int avbQuantity;
+
+    private Map<String, ChipGroup> attributeGroup = new HashMap<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -90,8 +96,9 @@ public class ProductDetailsFragment extends Fragment {
                             binding.productDetailsRating.setRating(product.getRating());
 
                             binding.productDetailsPrice.setText("LKR " + product.getPrice());
-                            binding.productDetailsAvbQuantity.setText(String.valueOf(product.getStockCount()));
 
+                            binding.productDetailsAvbQuantity.setText(String.valueOf(product.getStockCount()));
+                            avbQuantity = product.getStockCount();
 
                             if (product.getAttributes() != null) {
 
@@ -103,6 +110,19 @@ public class ProductDetailsFragment extends Fragment {
                         }
                     }
                 });
+
+        binding.productDetailsBtnMinus.setOnClickListener(v -> {
+            if (quantity > 1) {
+                quantity--;
+                binding.productDetailsQuantity.setText(String.valueOf(quantity));
+            }
+        });
+        binding.productDetailsBtnPlus.setOnClickListener(v -> {
+            if (quantity < avbQuantity) {
+                quantity++;
+                binding.productDetailsQuantity.setText(String.valueOf(quantity));
+            }
+        });
         loadTopSellingProducts();
 
     }
@@ -110,6 +130,7 @@ public class ProductDetailsFragment extends Fragment {
     private void loadTopSellingProducts() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("products")
+                .whereNotEqualTo("productId", productId)
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
                     @Override
@@ -160,6 +181,7 @@ public class ProductDetailsFragment extends Fragment {
 
         //Create Options
         ChipGroup group = new ChipGroup(getContext());
+        attributeGroup.put(attribute.getName(), group);
         group.setSelectionRequired(true);
         group.setSingleSelection(true);
 
