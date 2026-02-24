@@ -7,7 +7,9 @@
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:layout_above="@+id/product_details_bottom_bar"
+        >
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -78,7 +80,7 @@
                     android:id="@+id/product_details_attribute_container"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"/>
+                    android:orientation="vertical" />
 
 
                 <TextView
@@ -98,7 +100,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:background="@drawable/circle_shape"
-                        android:backgroundTint="@color/md_theme_inversePrimary_mediumContrast"
+                        android:backgroundTint="@color/md_theme_onPrimary"
                         android:text="-"
                         android:textSize="18sp" />
 
@@ -115,7 +117,7 @@
                         android:layout_width="40dp"
                         android:layout_height="40dp"
                         android:background="@drawable/circle_shape"
-                        android:backgroundTint="@color/md_theme_inversePrimary_mediumContrast"
+                        android:backgroundTint="@color/md_theme_onPrimary"
                         android:text="+"
                         android:textSize="18sp" />
 
@@ -137,16 +139,17 @@
                 </LinearLayout>
 
             </LinearLayout>
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="590dp"
-                android:background="@color/md_theme_secondary">
 
-            </FrameLayout>
+            <include
+                layout="@layout/item_section"
+                android:id="@+id/product_details_top_sell_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
     <LinearLayout
+        android:id="@+id/product_details_bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

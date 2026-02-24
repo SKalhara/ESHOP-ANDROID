@@ -8,7 +8,9 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,8 +25,11 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import com.kalhara.eshopfinal.R;
 import com.kalhara.eshopfinal.adapter.ProductSliderAdapter;
+import com.kalhara.eshopfinal.adapter.SectionAdapter;
 import com.kalhara.eshopfinal.databinding.FragmentProductDetailsBinding;
 import com.kalhara.eshopfinal.model.Product;
+
+import java.util.List;
 
 
 public class ProductDetailsFragment extends Fragment {
@@ -94,13 +99,48 @@ public class ProductDetailsFragment extends Fragment {
                                     renderAttribute(attribute, binding.productDetailsAttributeContainer);
 
                                 });
-
                             }
-
                         }
                     }
                 });
+        loadTopSellingProducts();
 
+    }
+
+    private void loadTopSellingProducts() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("products")
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot qds) {
+                        if (!qds.isEmpty()) {
+                            List<Product> products = qds.toObjects(Product.class);
+
+                            LinearLayoutManager manager = new LinearLayoutManager(getContext()
+                                    , LinearLayoutManager.HORIZONTAL, false);
+
+                            binding.productDetailsTopSellSection.itemSectionContainer.setLayoutManager(manager);
+
+                            SectionAdapter adapter = new SectionAdapter(products, product -> {
+
+                                Bundle bundle = new Bundle();
+                                bundle.putString("productId", product.getProductId());
+
+                                ProductDetailsFragment fragment = new ProductDetailsFragment();
+                                fragment.setArguments(bundle);
+
+                                getParentFragmentManager().beginTransaction()
+                                        .replace(R.id.fragment_container, fragment)
+                                        .addToBackStack(null)
+                                        .commit();
+
+                            });
+                            binding.productDetailsTopSellSection.itemSectionTitle.setText("Top Selling Products");
+                            binding.productDetailsTopSellSection.itemSectionContainer.setAdapter(adapter);
+                        }
+                    }
+                });
     }
 
     private void renderAttribute(Product.Attribute attribute, ViewGroup container) {
@@ -109,19 +149,24 @@ public class ProductDetailsFragment extends Fragment {
 
         //Create Label
         TextView label = new TextView(getContext());
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                100, LinearLayout.LayoutParams.WRAP_CONTENT);
+
+        layoutParams.gravity = Gravity.CENTER_VERTICAL;
+        label.setLayoutParams(layoutParams);
         label.setText(attribute.getName());
 
         row.addView(label);
 
         //Create Options
         ChipGroup group = new ChipGroup(getContext());
-        group.setPadding(0, 0, 0, 2);
         group.setSelectionRequired(true);
         group.setSingleSelection(true);
 
         attribute.getValue().forEach(value -> {
             Chip chip = new Chip(getContext());
             chip.setCheckable(true);
+            chip.setChipStrokeWidth(3f);
 
             if ("color".equals(attribute.getType())) {
                 chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(value)));
