@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -124,7 +125,9 @@ public class ProductDetailsFragment extends Fragment {
             }
         });
         loadTopSellingProducts();
-
+        binding.productDetailsBtnAddCart.setOnClickListener(v -> {
+            getFinalSelections();
+        });
     }
 
     private void loadTopSellingProducts() {
@@ -181,7 +184,6 @@ public class ProductDetailsFragment extends Fragment {
 
         //Create Options
         ChipGroup group = new ChipGroup(getContext());
-        attributeGroup.put(attribute.getName(), group);
         group.setSelectionRequired(true);
         group.setSingleSelection(true);
 
@@ -202,7 +204,31 @@ public class ProductDetailsFragment extends Fragment {
         row.addView(group);
 
         container.addView(row);
+        attributeGroup.put(attribute.getName(), group);
 
+    }
+
+    private void getFinalSelections() {
+
+        StringBuilder result = new StringBuilder("Selected: \n");
+
+        for (Map.Entry<String, ChipGroup> entry : attributeGroup.entrySet()) {
+            String attributeName = entry.getKey();
+            ChipGroup chipGroup = entry.getValue();
+
+            int checkedChipId = chipGroup.getCheckedChipId();
+            if (checkedChipId != -1) {
+                Chip chip = getView().findViewById(checkedChipId);
+                String value = chip.getText().toString();
+
+                if (value.isEmpty()) {
+                    result.append(attributeName).append(": ").append(chip.getChipBackgroundColor().toString());
+                } else {
+                    result.append(attributeName).append(": ").append(value);
+                }
+            }
+        }
+        Log.i("Final Result", result.toString());
     }
 
     @Override
