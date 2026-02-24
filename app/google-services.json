@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "210086413153",
+    "project_id": "eshopapp-40e51",
+    "storage_bucket": "eshopapp-40e51.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:210086413153:android:fa4efca82b23ddbcdabb20",
+        "android_client_info": {
+          "package_name": "com.kalhara.eshopfinal"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhYs8SF8n3B9-yQUBv_O1K7b0MZlmO-EY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
