@@ -180,6 +180,8 @@ public class ProductDetailsFragment extends Fragment {
         label.setLayoutParams(layoutParams);
         label.setText(attribute.getName());
 
+
+        label.setTag(attribute.getName());
         row.addView(label);
 
         //Create Options
@@ -191,6 +193,8 @@ public class ProductDetailsFragment extends Fragment {
             Chip chip = new Chip(getContext());
             chip.setCheckable(true);
             chip.setChipStrokeWidth(3f);
+
+            chip.setTag(value);
 
             if ("color".equals(attribute.getType())) {
                 chip.setChipBackgroundColor(ColorStateList.valueOf(Color.parseColor(value)));
@@ -219,13 +223,10 @@ public class ProductDetailsFragment extends Fragment {
             int checkedChipId = chipGroup.getCheckedChipId();
             if (checkedChipId != -1) {
                 Chip chip = getView().findViewById(checkedChipId);
-                String value = chip.getText().toString();
+                String value = chip.getTag().toString();
 
-                if (value.isEmpty()) {
-                    result.append(attributeName).append(": ").append(chip.getChipBackgroundColor().toString());
-                } else {
-                    result.append(attributeName).append(": ").append(value);
-                }
+                    result.append(attributeName).append(": ").append(value).append("\n");
+
             }
         }
         Log.i("Final Result", result.toString());
