@@ -163,8 +163,15 @@ public class CartFragment extends Fragment {
                         updateTotal();
                     }
                 }
+
             });
         }
+        binding.cartBtnProceed.setOnClickListener(v -> {
+            CheckoutFragment checkoutFragment = new CheckoutFragment();
+            getParentFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, checkoutFragment)
+                    .addToBackStack(null).commit();
+        });
     }
 
     private void updateTotal() {
