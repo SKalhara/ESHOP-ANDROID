@@ -9,6 +9,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -20,6 +22,7 @@ import com.kalhara.eshopfinal.model.CartItem;
 import com.kalhara.eshopfinal.model.Product;
 
 import java.util.List;
+import java.util.Locale;
 
 //public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 //
@@ -66,16 +69,17 @@ import java.util.List;
 //                    }
 //                });
 //
-////
-////        holder.itemView.setOnClickListener(v -> {
-////
-////            Animation animation = AnimationUtils.loadAnimation(v.getContext(), R.anim.click_animation);
-////            v.startAnimation(animation);
-////
-////            if (listener != null) {
-////                listener.onListingItemClick(product);
-////            }
-////        });
+
+/// /
+/// /        holder.itemView.setOnClickListener(v -> {
+/// /
+/// /            Animation animation = AnimationUtils.loadAnimation(v.getContext(), R.anim.click_animation);
+/// /            v.startAnimation(animation);
+/// /
+/// /            if (listener != null) {
+/// /                listener.onListingItemClick(product);
+/// /            }
+/// /        });
 //    }
 //
 //    @Override
@@ -105,11 +109,22 @@ import java.util.List;
 public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
 
     private List<CartItem> cartItems;
-    private OnListingItemClickListener listener;
+    private OnQuantityChangeListener changeListener;
 
-    public CartAdapter(List<CartItem> cartItems, OnListingItemClickListener listener) {
+    private OnRemoveListener removeListener;
+
+    public CartAdapter(List<CartItem> cartItems) {
         this.cartItems = cartItems;
-        this.listener = listener;
+    }
+
+    public void setOnQuantityChangeListener(OnQuantityChangeListener listener) {
+        this.changeListener = listener;
+
+    }
+
+    public void setOnRemoveListener(OnRemoveListener listener) {
+        this.removeListener = listener;
+
     }
 
     @NonNull
@@ -130,30 +145,53 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
             @Override
             public void onSuccess(QuerySnapshot qds) {
                 if (!qds.isEmpty()) {
+
+                    int currentPosition = holder.getAbsoluteAdapterPosition();
+                    if (currentPosition == RecyclerView.NO_POSITION) {
+                        return;
+                    }
+
+
                     Product product = qds.getDocuments().get(0).toObject(Product.class);
 
                     holder.productTitle.setText(product.getTitle());
-                    holder.productPrice.setText("LKR " + product.getPrice());
+                    holder.productPrice.setText(String.format(Locale.US, "LKR %,.2f", product.getPrice()));
                     holder.productQuantity.setText(String.valueOf(cartItem.getQuantity()));
 
                     Glide.with(holder.itemView.getContext())
                             .load(product.getImages().get(0))
                             .centerCrop()
                             .into(holder.productImage);
+
+                    holder.btnPlus.setOnClickListener(v -> {
+                        if (cartItem.getQuantity() < product.getStockCount()) {
+                            cartItem.setQuantity(cartItem.getQuantity() + 1);
+                            notifyItemChanged(currentPosition);
+                            if (changeListener != null) {
+                                changeListener.onChanged(cartItem);
+                            }
+                        }
+                    });
+
+                    holder.btnMinus.setOnClickListener(v -> {
+
+                        if (cartItem.getQuantity() > 1) {
+                            cartItem.setQuantity(cartItem.getQuantity() - 1);
+                            notifyItemChanged(currentPosition);
+                            if (changeListener != null) {
+                                changeListener.onChanged(cartItem);
+                            }
+                        }
+                    });
+
+                    holder.btnRemove.setOnClickListener(v -> {
+                        if (removeListener != null) {
+                            removeListener.onRemoved(currentPosition);
+                        }
+                    });
                 }
             }
         });
-
-
-//        holder.itemView.setOnClickListener(v -> {
-//
-//            Animation animation = AnimationUtils.loadAnimation(v.getContext(), R.anim.click_animation);
-//            v.startAnimation(animation);
-//
-//            if (listener != null) {
-//                listener.onListingItemClick(product);
-//            }
-//        });
     }
 
     @Override
@@ -167,16 +205,27 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.ViewHolder> {
         TextView productPrice;
         TextView productQuantity;
 
+        AppCompatButton btnPlus;
+        AppCompatButton btnMinus;
+        ImageView btnRemove;
+
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             productImage = itemView.findViewById(R.id.item_cart_image);
             productTitle = itemView.findViewById(R.id.item_cart_title);
             productPrice = itemView.findViewById(R.id.item_cart_price);
             productQuantity = itemView.findViewById(R.id.item_cart_quantity);
+            btnPlus = itemView.findViewById(R.id.item_cart_btn_plus);
+            btnMinus = itemView.findViewById(R.id.item_cart_btn_minus);
+            btnRemove = itemView.findViewById(R.id.item_cart_remove);
         }
     }
 
-    public interface OnListingItemClickListener {
-        void onListingItemClick(Product product);
+    public interface OnQuantityChangeListener {
+        void onChanged(CartItem cartItem);
+    }
+
+    public interface OnRemoveListener {
+        void onRemoved(int position);
     }
 }

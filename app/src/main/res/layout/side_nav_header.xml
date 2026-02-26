@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="wrap_content">
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/header_profile_pic"
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:layout_gravity="bottom"
-        android:layout_marginTop="40dp"
         android:layout_margin="20dp"
-        android:src="@drawable/person_2_24px"
-        tools:srcCompat="@tools:sample/avatars"
+        android:layout_marginTop="40dp"
         android:background="@drawable/circle_shape"
-        app:shapeAppearanceOverlay="@style/CircleImage"/>
+        android:src="@drawable/person_2_24px"
+        app:shapeAppearanceOverlay="@style/CircleImage"
+        tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
         android:id="@+id/header_user_name"
@@ -23,17 +23,16 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="125dp"
-android:text="You're not logged in"
-        />
+        android:text="You're not logged in" />
 
     <TextView
         android:id="@+id/header_user_email"
+        android:text="kalhara@gmail.com"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="125dp"
         android:layout_marginTop="20dp"
-        :text="kalhara@gmail.com"
 
         />
 
