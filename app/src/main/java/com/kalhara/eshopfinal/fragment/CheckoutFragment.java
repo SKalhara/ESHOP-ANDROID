@@ -19,6 +19,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.kalhara.eshopfinal.R;
 import com.kalhara.eshopfinal.databinding.FragmentCheckoutBinding;
+import com.kalhara.eshopfinal.listener.FirestoreCallback;
 import com.kalhara.eshopfinal.model.CartItem;
 import com.kalhara.eshopfinal.model.Order;
 import com.kalhara.eshopfinal.model.Product;
@@ -89,14 +90,31 @@ public class CheckoutFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         double shippingCost = 400;
-        double subTotal = getSubTotal();
-        double total = subTotal + shippingCost;
 
-        binding.checkoutSubtotal.setText(String.format(Locale.US, "LKR %,.2f", subTotal));
-        binding.checkoutShipping.setText(String.format(Locale.US, "LKR %,.2f", shippingCost));
-        binding.checkoutTotal.setText(String.format(Locale.US, "LKR %,.2f", total));
-        String uid = firebaseAuth.getCurrentUser().getUid();
+        getCartItems(cartItems -> {
+            ArrayList<String> productIds = new ArrayList<>();
+            cartItems.forEach(cartItem -> {
+                productIds.add(cartItem.getProductId());
+            });
 
+            getProductsById(productIds, data -> {
+                double subTotal = 0;
+                for (CartItem cartItem : cartItems) {
+                    Product product = data.get(cartItem.getProductId());
+                    if (product != null) {
+                        subTotal += product.getPrice() * cartItem.getQuantity();
+                    }
+                }
+                double total = subTotal + shippingCost;
+
+                binding.checkoutSubtotal.setText(String.format(Locale.US, "LKR %,.2f", subTotal));
+                binding.checkoutShipping.setText(String.format(Locale.US, "LKR %,.2f", shippingCost));
+                binding.checkoutTotal.setText(String.format(Locale.US, "LKR %,.2f", total));
+
+            });
+        });
+
+                String uid = firebaseAuth.getCurrentUser().getUid();
 
         binding.checkoutBtnProceed.setOnClickListener(v -> {
             db.collection("users").document(uid).collection("cart")
@@ -184,7 +202,7 @@ public class CheckoutFragment extends Fragment {
 
     }
 
-    private List<CartItem> getCartItems() {
+    private void getCartItems(FirestoreCallback<List<CartItem>> callback) {
 
         List<CartItem> cartItems = new ArrayList<>();
 
@@ -194,24 +212,22 @@ public class CheckoutFragment extends Fragment {
                     @Override
                     public void onSuccess(QuerySnapshot qds) {
                         if (!qds.isEmpty()) {
-                            for (DocumentSnapshot ds : qds.getDocuments()) {
-                                if (ds.exists()) {
-                                    CartItem cartItem = ds.toObject(CartItem.class);
-                                    cartItems.add(cartItem);
-                                }
-                            }
+                            List<CartItem> cartItems = qds.toObjects(CartItem.class);
+                            callback.onCallBack(cartItems);
                         }
                     }
                 });
-        return cartItems;
     }
 
 
-    private Map<String, Product> getProductsById(List<String> productIds) {
-if(productIds.isEmpty()){
-    return  null;
-}
+    private void getProductsById(List<String> productIds, FirestoreCallback<Map<String, Product>> callback) {
+
         Map<String, Product> products = new HashMap<>();
+
+        if (productIds == null || productIds.isEmpty()) {
+            callback.onCallBack(products);
+            return;
+        }
         db.collection("products")
                 .whereIn("productId", productIds).get()
                 .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
@@ -224,30 +240,30 @@ if(productIds.isEmpty()){
                                 products.put(product.getProductId(), product);
                             }
                         });
+                        callback.onCallBack(products);
                     }
                 });
-        return products;
     }
 
-    private double getSubTotal() {
-
-        List<CartItem> cartItems = getCartItems();
-        List<String> productIds = new ArrayList<>();
-        cartItems.forEach(cartItem -> {
-            productIds.add(cartItem.getProductId());
-        });
-
-        Map<String, Product> products = getProductsById(productIds);
-
-        double subTotal = 0;
-
-        for (CartItem cartItem : cartItems) {
-            Product product = products.get(cartItem.getProductId());
-            if (product != null) {
-                subTotal += product.getPrice() * cartItem.getQuantity();
-            }
-        }
-        return subTotal;
-
-    }
+//    private void getSubTotal() {
+//
+//        List<CartItem> cartItems = getCartItems();
+//        List<String> productIds = new ArrayList<>();
+//        cartItems.forEach(cartItem -> {
+//            productIds.add(cartItem.getProductId());
+//        });
+//
+//        Map<String, Product> products = getProductsById(productIds);
+//
+//        double subTotal = 0;
+//
+//        for (CartItem cartItem : cartItems) {
+//            Product product = products.get(cartItem.getProductId());
+//            if (product != null) {
+//                subTotal += product.getPrice() * cartItem.getQuantity();
+//            }
+//        }
+//        return subTotal;
+//
+//    }
 }
