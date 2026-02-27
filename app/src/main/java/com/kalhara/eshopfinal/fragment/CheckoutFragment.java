@@ -13,25 +13,35 @@ import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.kalhara.eshopfinal.R;
 import com.kalhara.eshopfinal.databinding.FragmentCheckoutBinding;
 import com.kalhara.eshopfinal.model.CartItem;
 import com.kalhara.eshopfinal.model.Order;
+import com.kalhara.eshopfinal.model.Product;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 
 public class CheckoutFragment extends Fragment {
 
     private FragmentCheckoutBinding binding;
+    FirebaseFirestore db;
+    private FirebaseAuth firebaseAuth;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        db = FirebaseFirestore.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
 
     }
 
@@ -39,6 +49,38 @@ public class CheckoutFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = FragmentCheckoutBinding.inflate(inflater, container, false);
+
+        binding.shippingLayoutBtn.setOnClickListener(v -> {
+            if (binding.shippingLayoutBody.getVisibility() == View.GONE) {
+                binding.shippingLayoutBody.setVisibility(View.VISIBLE);
+                binding.shippingLayoutBtn.setRotation(180f);
+            } else {
+                binding.shippingLayoutBody.setVisibility(View.GONE);
+                binding.shippingLayoutBtn.setRotation(0f);
+            }
+        });
+        binding.billingLayoutBtn.setOnClickListener(v -> {
+            if (binding.billingLayoutBody.getVisibility() == View.GONE) {
+                binding.billingLayoutBody.setVisibility(View.VISIBLE);
+                binding.billingLayoutBtn.setRotation(180f);
+            } else {
+                binding.billingLayoutBody.setVisibility(View.GONE);
+                binding.billingLayoutBtn.setRotation(0f);
+
+
+            }
+        });
+
+        binding.shippingDetailsCheckBilling.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                binding.billingLayout.setVisibility(View.GONE);
+            } else {
+                binding.billingLayout.setVisibility(View.VISIBLE);
+                binding.billingLayoutBody.setVisibility(View.VISIBLE);
+            }
+        });
+
+
         return binding.getRoot();
     }
 
@@ -46,9 +88,15 @@ public class CheckoutFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        FirebaseAuth firebaseAuth = FirebaseAuth.getInstance();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        double shippingCost = 400;
+        double subTotal = getSubTotal();
+        double total = subTotal + shippingCost;
+
+        binding.checkoutSubtotal.setText(String.format(Locale.US, "LKR %,.2f", subTotal));
+        binding.checkoutShipping.setText(String.format(Locale.US, "LKR %,.2f", shippingCost));
+        binding.checkoutTotal.setText(String.format(Locale.US, "LKR %,.2f", total));
         String uid = firebaseAuth.getCurrentUser().getUid();
+
 
         binding.checkoutBtnProceed.setOnClickListener(v -> {
             db.collection("users").document(uid).collection("cart")
@@ -133,6 +181,73 @@ public class CheckoutFragment extends Fragment {
                         }
                     });
         });
+
+    }
+
+    private List<CartItem> getCartItems() {
+
+        List<CartItem> cartItems = new ArrayList<>();
+
+        String uid = firebaseAuth.getCurrentUser().getUid();
+        db.collection("users").document(uid).collection("cart")
+                .get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot qds) {
+                        if (!qds.isEmpty()) {
+                            for (DocumentSnapshot ds : qds.getDocuments()) {
+                                if (ds.exists()) {
+                                    CartItem cartItem = ds.toObject(CartItem.class);
+                                    cartItems.add(cartItem);
+                                }
+                            }
+                        }
+                    }
+                });
+        return cartItems;
+    }
+
+
+    private Map<String, Product> getProductsById(List<String> productIds) {
+if(productIds.isEmpty()){
+    return  null;
+}
+        Map<String, Product> products = new HashMap<>();
+        db.collection("products")
+                .whereIn("productId", productIds).get()
+                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                    @Override
+                    public void onSuccess(QuerySnapshot qds) {
+
+                        qds.getDocuments().forEach(ds -> {
+                            Product product = ds.toObject(Product.class);
+                            if (product != null) {
+                                products.put(product.getProductId(), product);
+                            }
+                        });
+                    }
+                });
+        return products;
+    }
+
+    private double getSubTotal() {
+
+        List<CartItem> cartItems = getCartItems();
+        List<String> productIds = new ArrayList<>();
+        cartItems.forEach(cartItem -> {
+            productIds.add(cartItem.getProductId());
+        });
+
+        Map<String, Product> products = getProductsById(productIds);
+
+        double subTotal = 0;
+
+        for (CartItem cartItem : cartItems) {
+            Product product = products.get(cartItem.getProductId());
+            if (product != null) {
+                subTotal += product.getPrice() * cartItem.getQuantity();
+            }
+        }
+        return subTotal;
 
     }
 }
