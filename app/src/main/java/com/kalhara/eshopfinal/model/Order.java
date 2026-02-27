@@ -1,5 +1,6 @@
 package com.kalhara.eshopfinal.model;
 
+import java.util.Date;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -7,17 +8,17 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class Order {
-
     private String orderId;
     private String userId;
     private double totalAmount;
     private String status;
-    private long orderDate;
+    private Timestamp orderDate;
     private List<OrderItem> orderItems;
     private Address shippingAddress;
     private Address billingAddress;
@@ -40,6 +41,7 @@ public class Order {
             private String name;
             private String value;
         }
+
     }
 
     @Data
@@ -55,4 +57,5 @@ public class Order {
         private String city;
         private String postcode;
     }
+
 }

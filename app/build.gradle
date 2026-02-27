@@ -51,5 +51,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.dotsindicator)
+    implementation libs.payhere.android.sdk
+    implementation libs.gson
 
 }
