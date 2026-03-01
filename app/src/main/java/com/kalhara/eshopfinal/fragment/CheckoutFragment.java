@@ -137,13 +137,11 @@ public class CheckoutFragment extends Fragment {
             if (paymentActive) {
                 InitRequest req = new InitRequest();
                 req.setSandBox(true);
-
-                req.setMerchantId("1234216");
-                req.setMerchantSecret("NTAyMTM4MjEyMjU4Njg2MjEyNzkyOTYxOTYyMjI3MjgxMjM1MDM=");
+                req.setMerchantId("1224950");
+                req.setMerchantSecret("MTA3ODUzODY4NjIzNjk0MzI0NDk3MjE4ODc1MjAyMzU0NjkyOTQ3");
                 req.setCurrency("LKR");
                 req.setAmount(total);
-                req.setOrderId("ESOI-001");
-
+                req.setOrderId("ESOI/001");
                 req.setItemsDescription("");
 
                 req.getCustomer().setFirstName(binding.shippingDetailsName.getText().toString());
@@ -153,8 +151,7 @@ public class CheckoutFragment extends Fragment {
                 req.getCustomer().getAddress().setAddress("No.1, Galle Road");
                 req.getCustomer().getAddress().setCity("Colombo");
                 req.getCustomer().getAddress().setCountry("Sri Lanka");
-
-                //req.setNotifyUrl("https://eshop.requestcatcher.com/");
+                req.setNotifyUrl("https://eshopkalhara.requestcatcher.com");
 
                 Intent intent = new Intent(getActivity(), PHMainActivity.class);
                 intent.putExtra(PHConstants.INTENT_EXTRA_DATA, req);
@@ -246,7 +243,7 @@ public class CheckoutFragment extends Fragment {
             order.setUserId(uid);
             order.setTotalAmount(total);
             order.setStatus("PAID");
-            order.setOrderDate(Timestamp.now());
+//            order.setOrderDate(Timestamp.now());
 
 
             String shipping_name = binding.shippingDetailsName.getText().toString();
