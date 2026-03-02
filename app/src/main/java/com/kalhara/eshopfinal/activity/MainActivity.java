@@ -1,6 +1,8 @@
 package com.kalhara.eshopfinal.activity;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -11,6 +13,8 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
@@ -34,6 +38,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.kalhara.eshopfinal.R;
 import com.kalhara.eshopfinal.databinding.ActivityMainBinding;
 import com.kalhara.eshopfinal.databinding.SideNavHeaderBinding;
@@ -46,6 +53,8 @@ import com.kalhara.eshopfinal.fragment.ProfileFragment;
 import com.kalhara.eshopfinal.fragment.SettingFragment;
 import com.kalhara.eshopfinal.fragment.WishlistFragment;
 import com.kalhara.eshopfinal.model.User;
+
+import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -131,6 +140,7 @@ public class MainActivity extends AppCompatActivity
                                 sideNavHeaderBinding.headerUserName.setText(user.getName());
                                 sideNavHeaderBinding.headerUserEmail.setText(user.getEmail());
 
+
                                 Glide.with(MainActivity.this)
                                         .load(user.getProfilePicUrl())
                                         .circleCrop()
@@ -158,9 +168,39 @@ public class MainActivity extends AppCompatActivity
             navigationView.getMenu().findItem(R.id.side_nav_cart).setVisible(true);
             navigationView.getMenu().findItem(R.id.side_nav_messages).setVisible(true);
             navigationView.getMenu().findItem(R.id.side_nav_logout).setVisible(true);
+
+            sideNavHeaderBinding.headerProfilePic.setOnClickListener(v -> {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                activityResultLauncher.launch(intent);
+            });
         }
 
     }
+
+    ActivityResultLauncher<Intent> activityResultLauncher = registerForActivityResult
+            (new ActivityResultContracts.StartActivityForResult(), result -> {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            Uri uri = result.getData().getData();
+                            Log.i("ImageURI", uri.getPath());
+
+                            Glide.with(MainActivity.this)
+                                    .load(uri)
+                                    .circleCrop()
+                                    .into(sideNavHeaderBinding.headerProfilePic);
+
+                            String imageId = UUID.randomUUID().toString();
+                            FirebaseStorage storage = FirebaseStorage.getInstance();
+                            StorageReference imageReference = storage.getReference("profile-images")
+                                    .child(imageId);
+                            imageReference.putFile(uri).addOnSuccessListener(taskSnapshot -> {
+
+                            });
+
+                        }
+                    }
+            );
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {

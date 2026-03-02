@@ -45,9 +45,10 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
         Category category = categories.get(position);
         holder.categoryName.setText(category.getName());
 
-        storage.getReference("/" + category.getImageUrl())
+        storage.getReference(category.getImageUrl())
                 .getDownloadUrl()
                 .addOnSuccessListener(uri -> {
+
                     Glide.with(holder.itemView.getContext())
                             .load(uri)
                             .centerCrop()
