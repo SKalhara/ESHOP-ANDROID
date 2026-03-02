@@ -70,9 +70,11 @@ public class CategoryFragment extends Fragment {
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                        QuerySnapshot result = task.getResult();
+//                        QuerySnapshot result = task.getResult();
+
                         List<Category> categories = task.getResult().toObjects(Category.class);
                         adapter = new CategoryAdapter(categories, category -> {
+
                             Bundle bundle = new Bundle();
                             bundle.putString("categoryId", category.getCategoryId());
 

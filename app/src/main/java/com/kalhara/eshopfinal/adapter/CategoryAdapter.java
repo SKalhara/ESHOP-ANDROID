@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.google.firebase.storage.FirebaseStorage;
 import com.kalhara.eshopfinal.R;
 import com.kalhara.eshopfinal.model.Category;
 
@@ -22,9 +23,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     private List<Category> categories;
     private OnCategoryClickListener listener;
 
+    private FirebaseStorage storage;
+
     public CategoryAdapter(List<Category> categories, OnCategoryClickListener listener) {
         this.categories = categories;
         this.listener = listener;
+        storage = FirebaseStorage.getInstance();
     }
 
     @NonNull
@@ -40,10 +44,17 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.ViewHo
     public void onBindViewHolder(@NonNull CategoryAdapter.ViewHolder holder, int position) {
         Category category = categories.get(position);
         holder.categoryName.setText(category.getName());
-        Glide.with(holder.itemView.getContext())
-                .load(category.getImageUrl())
-                .centerCrop()
-                .into(holder.categoryImage);
+
+        storage.getReference("/" + category.getImageUrl())
+                .getDownloadUrl()
+                .addOnSuccessListener(uri -> {
+                    Glide.with(holder.itemView.getContext())
+                            .load(uri)
+                            .centerCrop()
+                            .into(holder.categoryImage);
+
+                });
+
 
         holder.itemView.setOnClickListener(v -> {
 
