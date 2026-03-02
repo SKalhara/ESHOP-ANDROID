@@ -30,6 +30,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationBarView;
@@ -141,10 +142,15 @@ public class MainActivity extends AppCompatActivity
                                 sideNavHeaderBinding.headerUserEmail.setText(user.getEmail());
 
 
-                                Glide.with(MainActivity.this)
-                                        .load(user.getProfilePicUrl())
-                                        .circleCrop()
-                                        .into(sideNavHeaderBinding.headerProfilePic);
+                                FirebaseStorage storage = FirebaseStorage.getInstance();
+                                storage.getReference("profile-images/" + user.getProfilePicUrl())
+                                        .getDownloadUrl().addOnSuccessListener(uri -> {
+
+                                            Glide.with(MainActivity.this)
+                                                    .load(uri)
+                                                    .circleCrop()
+                                                    .into(sideNavHeaderBinding.headerProfilePic);
+                                        });
                             } else {
                                 Log.e("Firestore", "User object is null");
                             }
@@ -195,7 +201,13 @@ public class MainActivity extends AppCompatActivity
                             StorageReference imageReference = storage.getReference("profile-images")
                                     .child(imageId);
                             imageReference.putFile(uri).addOnSuccessListener(taskSnapshot -> {
-
+                                firebaseFirestore.collection("users")
+                                        .document(firebaseAuth.getUid())
+                                        .update("profilePicUrl", imageId)
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(MainActivity.this, "Profile picture updated",
+                                                    Toast.LENGTH_SHORT).show();
+                                        });
                             });
 
                         }
